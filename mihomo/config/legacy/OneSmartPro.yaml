@@ -10,9 +10,9 @@
 # >>=====================================<<
 # 名称: OneSmartPro 一键智能代理
 # 地址: https://github.com/666OS/YYDS
-# 版本: v26.1.1
+# 版本: v26.1.4
 # 作者: YYDS666
-# 更新: 2026 年 1 月 30 日
+# 更新: 2026 年 7 月 11 日
 # 频道: https://t.me/Pinched666
 # 描述: 基于Mihomo的智能代理配置，提供四层架构智能路由和全场景规则集
 #       集成Smart算法自动选择最优节点，支持故障转移和负载均衡
@@ -23,9 +23,9 @@
 BaseProvider: &BaseProvider {type: http, interval: 86400, proxy: DIRECT, health-check: {enable: true, url: 'https://www.google.com/generate_204', interval: 300}, filter: '^(?!.*(群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'}
 
 # 策略组类型模板 - 定义不同的策略组基础配置
-BaseFB: &BaseFB       {type: fallback, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
-BaseLB: &BaseLB       {type: load-balance, interval: 200, lazy: true, url: 'https://www.google.com/generate_204'}
-BaseSmart: &BaseSmart {type: smart, interval: 200, lazy: true, url: 'https://www.google.com/generate_204', hidden: true, uselightgbm: true}
+BaseFB: &BaseFB       {type: fallback, interval: 200, lazy: true, empty-fallback: REJECT, url: 'https://www.google.com/generate_204'}
+BaseLB: &BaseLB       {type: load-balance, interval: 200, lazy: true, empty-fallback: REJECT, url: 'https://www.google.com/generate_204'}
+BaseSmart: &BaseSmart {type: smart, interval: 200, lazy: true, empty-fallback: REJECT, url: 'https://www.google.com/generate_204', hidden: true, uselightgbm: true}
 
 # 节点筛选正则表达式 - 基于地理位置和关键词过滤
 FilterHK: &FilterHK '^(?=.*(?i)(港|🇭🇰|HK|Hong|HKG))(?!.*(排除1|排除2|5x)).*$'
@@ -78,8 +78,8 @@ socks-port: 7891
 redir-port: 7892
 mixed-port: 7893
 tproxy-port: 7895
-ipv6: true
-allow-lan: true
+ipv6: false
+allow-lan: false
 unified-delay: true
 tcp-concurrent: true
 log-level: warning
@@ -92,10 +92,8 @@ keep-alive-idle: 600
 authentication:
   - mihomo:yyds666
 skip-auth-prefixes:
-  - 192.168.1.0/24
-  - 192.168.31.0/24
-  - 192.168.100.0/24
   - 127.0.0.1/8
+  - ::1/128
 
 # 实验性功能
 experimental:
@@ -142,7 +140,7 @@ tun:
 # DNS配置
 dns:
   enable: true
-  ipv6: true
+  ipv6: false
   enhanced-mode: fake-ip
   fake-ip-range: 198.18.0.1/16
   default-nameserver:
@@ -207,7 +205,6 @@ rules:
   # 拦截规则
   - RULE-SET,Tracking,REJECT
   - RULE-SET,Advertising,REJECT
-  - AND,((DST-PORT,443),(NETWORK,UDP),(NOT,((GEOIP,CN)))),REJECT  # 阻止海外 QUIC
 
   # 域名规则
   - RULE-SET,Private,直接连接
@@ -243,7 +240,7 @@ rules:
   - RULE-SET,GoogleIP,谷歌服务,no-resolve
   - RULE-SET,FacebookIP,脸书服务,no-resolve
   - RULE-SET,ProxyIP,国外流量,no-resolve
-  - RULE-SET,ChinaIP,国内流量
+  - RULE-SET,ChinaIP,国内流量,no-resolve
 
   # 兜底规则
   - MATCH,兜底流量
